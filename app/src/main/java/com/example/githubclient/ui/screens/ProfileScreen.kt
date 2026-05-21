@@ -1,41 +1,81 @@
 package com.example.githubclient.ui.screens
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.compose.runtime.*
+
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
 import com.example.githubclient.ui.viewmodel.MainViewModel
-import androidx.compose.runtime.livedata.observeAsState
+
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.MoreVert
+
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.rememberAsyncImagePainter
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(viewModel: MainViewModel, navController: NavController) {
-    val userRepos = viewModel.userRepos.collectAsState(initial = emptyList())
-    val isLoggedIn = viewModel.isLoggedIn.collectAsState(initial = false)
-    val currentUser = viewModel.currentUser.observeAsState().value
+fun ProfileScreen(
+    viewModel: MainViewModel,
+    navController: NavController
+) {
+    val user by viewModel.userInfo.observeAsState(null)
+    val userRepos by viewModel.userRepositories.observeAsState(emptyList())
+    val error by viewModel.profileError.observeAsState()
+
+    var menuExpanded by remember { mutableStateOf(false) }
+    var isLoggedIn by remember { mutableStateOf<Boolean?>(null) }
+
+    // ==========================================
+    // 🔥 核心：未登录直接跳登录页
+    // ==========================================
+    LaunchedEffect(Unit) {
+        viewModel.isUserLoggedIn { loggedIn ->
+            isLoggedIn = loggedIn
+            if (loggedIn) {
+                viewModel.loadUserProfile()
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("My Profile") },
+                title = { Text("MyProfile") },
+                navigationIcon = {}, // 平级页面 → 无返回
                 actions = {
-                    if (isLoggedIn.value) {
-                        IconButton(onClick = {
-                            viewModel.logout()
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.ExitToApp,
-                                contentDescription = "Logout"
+                    Box {
+                        IconButton(onClick = { menuExpanded = true }) {
+                            Icon(Icons.Default.MoreVert, "菜单")
+                        }
+                        DropdownMenu(
+                            expanded = menuExpanded,
+                            onDismissRequest = { menuExpanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("退出登录", color = MaterialTheme.colorScheme.error) },
+                                onClick = {
+                                    menuExpanded = false
+                                    viewModel.logout()
+                                    navController.navigate("home") {
+                                        popUpTo(0)
+                                    }
+                                }
                             )
                         }
                     }
@@ -47,74 +87,151 @@ fun ProfileScreen(viewModel: MainViewModel, navController: NavController) {
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(20.dp)
         ) {
-            if (!isLoggedIn.value) {
-                // 未登录居中布局
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "暂无登录账号",
-                        style = MaterialTheme.typography.headlineSmall,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
-                    Text(
-                        text = "登录后即可查看个人仓库与账号信息",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(bottom = 32.dp)
-                    )
-                    Button(
-                        onClick = { navController.navigate("login") },
-                        modifier = Modifier.widthIn(min = 160.dp),
-                        shape = MaterialTheme.shapes.medium
+            when {
+                // ==========================================
+                // 🔥 1. 还在检查登录状态 → 轻量 loading
+                // ==========================================
+                isLoggedIn == null -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text("前往登录")
+                        CircularProgressIndicator()
                     }
                 }
-                return@Column
-            }
-
-            // 登录后原有布局
-            currentUser?.let {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    AsyncImage(
-                        model = it.avatar_url,
-                        contentDescription = "Avatar",
-                        modifier = Modifier.size(64.dp)
-                    )
-                    Column {
-                        Text(it.login, style = MaterialTheme.typography.titleLarge)
-                        it.name?.let { name ->
-                            Text(name, style = MaterialTheme.typography.bodyMedium)
+                // ==========================================
+                // 🔥 2. 未登录 → 居中提示页（你要的效果）
+                // ==========================================
+                isLoggedIn == false -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "尚未登录",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            text = "请登录后查看个人资料",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(Modifier.height(24.dp))
+                        Button(
+                            onClick = {
+                                navController.navigate("login")
+                            }
+                        ) {
+                            Text("去登录")
                         }
                     }
                 }
-                Spacer(Modifier.height(24.dp))
-            }
 
-            Text(
-                "My Repositories",
-                style = MaterialTheme.typography.titleLarge
-            )
+                // 加载中
+                user == null && error == null -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                }
 
-            LazyColumn(
-                modifier = Modifier.padding(top = 16.dp)
-            ) {
-                items(userRepos.value) { repo ->
-                    RepoItem(repo) {
-                        navController.navigate("repoDetail/${repo.owner.login}/${repo.name}")
+                // 错误 + 重试
+                error != null -> {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = error!!,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Spacer(Modifier.height(16.dp))
+                        Button(onClick = { viewModel.loadUserProfile() }) {
+                            Text("重试")
+                        }
+                    }
+                }
+
+                // 已登录，显示资料
+                else -> {
+                    // 头像
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = rememberAsyncImagePainter(user?.avatar_url),
+                            contentDescription = "头像",
+                            modifier = Modifier
+                                .size(80.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                        Spacer(Modifier.width(16.dp))
+                        Column {
+                            Text(
+                                user?.name ?: user?.login ?: "用户",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text("@${user?.login}")
+                        }
+                    }
+
+                    Spacer(Modifier.height(24.dp))
+
+                    InfoRow("我的仓库", "${userRepos.size} 个")
+
+                    Spacer(Modifier.height(32.dp))
+                    Text("仓库列表", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
+                    Spacer(Modifier.height(16.dp))
+
+                    if (userRepos.isEmpty()) {
+                        Text("暂无仓库")
+                    } else {
+                        userRepos.forEach { repo ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 6.dp)
+                                    .clickable {
+                                        val route = "repoDetail/${repo.owner.login}/${repo.name}"
+                                        navController.navigate(route)
+                                    }
+                            ) {
+                                Column(Modifier.padding(16.dp)) {
+                                    Text(repo.name, fontWeight = FontWeight.Medium)
+                                    Text(
+                                        repo.description ?: "无描述",
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun InfoRow(label: String, value: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(value, fontWeight = FontWeight.Medium)
     }
 }

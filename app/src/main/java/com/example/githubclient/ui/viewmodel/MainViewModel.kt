@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.LiveData
 import com.example.githubclient.data.remote.User
+import kotlinx.coroutines.flow.firstOrNull
 
 
 class MainViewModel(
@@ -20,12 +21,14 @@ class MainViewModel(
 
     val trendingRepos = repository.trendingRepos
     val searchResults = repository.searchResults
+    val userInfo = repository.userInfo
+    val userRepositories = repository.userRepos
 
-    private val _homeError = MutableLiveData<String?>(null)
-    val homeError: LiveData<String?> = _homeError
 
-    private val _searchError = MutableLiveData<String?>(null)
-    val searchError: LiveData<String?> = _searchError
+    val homeError: LiveData<String?> = repository.homeError
+    val searchError: LiveData<String?> = repository.searchError
+    val detailError: LiveData<String?> = repository.detailError
+    val profileError: LiveData<String?> = repository.profileError
 
     private val _isLoggedIn = MutableStateFlow(false)
     val isLoggedIn: StateFlow<Boolean> = _isLoggedIn
@@ -64,14 +67,35 @@ class MainViewModel(
 
     fun fetchTrendingRepos() {
         viewModelScope.launch {
-            _homeError.postValue(null) // 清空首页错误
             repository.fetchTrendingRepos()
+        }
+    }
+
+    // ==========================================
+    // 检查是否登录（给 Profile 用）
+    // ==========================================
+    fun isUserLoggedIn(callback: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val token = authPreferences.authTokenFlow.firstOrNull()
+            callback(!token.isNullOrEmpty())
+        }
+    }
+
+    // ==========================================
+    // 从 DataStore 获取 token 并加载资料
+    // ==========================================
+    fun loadUserProfile() {
+        viewModelScope.launch {
+            val token = authPreferences.authTokenFlow.firstOrNull()
+            if (token.isNullOrEmpty()) {
+                return@launch
+            }
+            repository.fetchUserProfile(token)
         }
     }
 
     fun searchReposByLanguage(language: String) {
         viewModelScope.launch {
-            _searchError.postValue(null) // 清空搜索错误
             repository.searchRepositoriesByLanguage(language)
         }
     }
@@ -85,6 +109,7 @@ class MainViewModel(
 
     fun login(token: String) {
         viewModelScope.launch {
+            repository.fetchUserProfile(token)
             authPreferences.saveAuthToken(token)
         }
     }
@@ -93,6 +118,7 @@ class MainViewModel(
         viewModelScope.launch {
             authPreferences.clearAuthToken()
             _userRepos.value = emptyList()
+            repository.clearProfileData()
         }
     }
 
