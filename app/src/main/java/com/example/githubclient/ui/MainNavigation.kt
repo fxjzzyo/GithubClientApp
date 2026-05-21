@@ -15,15 +15,22 @@ import com.example.githubclient.ui.viewmodel.MainViewModel
 @Composable
 fun MainNavigation(viewModel: MainViewModel) {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "home") {
-        composable("home") { HomeScreen(viewModel, navController) }
-        composable("search") { SearchScreen(viewModel) }
-        composable("login") { LoginScreen(viewModel, navController) }
-        composable("profile") { ProfileScreen(viewModel, navController) }
-        composable("repoDetail/{owner}/{repo}") { backStackEntry ->
-            val owner = backStackEntry.arguments?.getString("owner") ?: ""
-            val repo = backStackEntry.arguments?.getString("repo") ?: ""
-            RepoDetailScreen(viewModel, owner, repo, navController)
+
+    MainScaffold(navController = navController) { modifier ->
+        NavHost(
+            navController = navController,
+            startDestination = "home",
+            modifier = modifier
+        ) {
+            composable("home") { HomeScreen(viewModel, navController) }
+            composable("search") { SearchScreen(viewModel, navController) }
+            composable("profile") { ProfileScreen(viewModel, navController) }
+            composable("login") { LoginScreen(viewModel, navController) }
+            composable("repoDetail/{owner}/{repo}") { backStackEntry ->
+                val owner = backStackEntry.arguments?.getString("owner") ?: ""
+                val repo = backStackEntry.arguments?.getString("repo") ?: ""
+                RepoDetailScreen(viewModel, owner, repo, navController)
+            }
         }
     }
 }

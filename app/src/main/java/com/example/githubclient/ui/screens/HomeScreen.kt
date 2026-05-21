@@ -28,28 +28,6 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
             TopAppBar(
                 title = { Text("Trending Repositories") }
             )
-        },
-        bottomBar = {
-            NavigationBar {  // 修复：Material3 正确 BottomNavigation 组件
-                NavigationBarItem(
-                    selected = true,
-                    onClick = {},
-                    icon = { Icon(Icons.Default.Home, contentDescription = null) },
-                    label = { Text("Home") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { navController.navigate("search") },
-                    icon = { Icon(Icons.Default.Search, contentDescription = null) },
-                    label = { Text("Search") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { navController.navigate("login") },
-                    icon = { Icon(Icons.Default.Person, contentDescription = null) },
-                    label = { Text("Profile") }
-                )
-            }
         }
     ) { padding ->
         Box(

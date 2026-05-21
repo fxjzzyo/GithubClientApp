@@ -1,14 +1,33 @@
 package com.example.githubclient.ui.screens
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.githubclient.ui.viewmodel.MainViewModel
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,7 +48,17 @@ fun RepoDetailScreen(
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text(repo) }) }
+        topBar = {
+            TopAppBar(
+                // 🔥 左上角返回箭头
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                title = { Text(repo) }
+            )
+        }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -38,50 +67,40 @@ fun RepoDetailScreen(
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            // 显示仓库详情
             repoDetail.value?.let {
                 Text("名称：${it.full_name}", style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.height(8.dp))
-                Text("描述：${it.description ?: "无描述"}")
-                Spacer(Modifier.height(8.dp))
+                Text("描述：${it.description ?: "无"}", Modifier.padding(vertical = 4.dp))
                 Text("Star：${it.stargazers_count}")
-                Spacer(Modifier.height(8.dp))
                 Text("语言：${it.language ?: "未知"}")
-                Spacer(Modifier.height(24.dp))
             }
 
-            // 创建 Issue
-            Text("创建 Issue", style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(8.dp))
+            Text(
+                "Create Issue",
+                Modifier.padding(top = 20.dp, bottom = 8.dp),
+                style = MaterialTheme.typography.titleMedium
+            )
 
             if (!isLoggedIn) {
-                Text("请先登录！", color = MaterialTheme.colorScheme.error)
+                Text("请先登录", color = MaterialTheme.colorScheme.error)
             } else {
                 OutlinedTextField(
                     value = issueTitle,
                     onValueChange = { issueTitle = it },
                     label = { Text("标题") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxSize()
                 )
-                Spacer(Modifier.height(8.dp))
                 OutlinedTextField(
                     value = issueBody,
                     onValueChange = { issueBody = it },
                     label = { Text("内容") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxSize().padding(vertical = 8.dp)
                 )
-                Spacer(Modifier.height(16.dp))
-                Button(
-                    onClick = {
-                        if (issueTitle.isNotBlank()) {
-                            viewModel.createIssue(owner, repo, issueTitle, issueBody)
-                            issueTitle = ""
-                            issueBody = ""
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("提交 Issue")
+                Button(onClick = {
+                    if (issueTitle.isNotBlank()) {
+                        viewModel.createIssue(owner, repo, issueTitle, issueBody)
+                    }
+                }) {
+                    Text("提交")
                 }
             }
         }
