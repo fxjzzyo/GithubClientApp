@@ -20,14 +20,18 @@ class MainViewModel(
 
     val trendingRepos = repository.trendingRepos
     val searchResults = repository.searchResults
-    val error = repository.error
+
+    private val _homeError = MutableLiveData<String?>(null)
+    val homeError: LiveData<String?> = _homeError
+
+    private val _searchError = MutableLiveData<String?>(null)
+    val searchError: LiveData<String?> = _searchError
 
     private val _isLoggedIn = MutableStateFlow(false)
     val isLoggedIn: StateFlow<Boolean> = _isLoggedIn
 
     private val _userRepos = MutableStateFlow<List<Repository>>(emptyList())
     val userRepos: StateFlow<List<Repository>> = _userRepos
-
 
     private val _currentUser = MutableLiveData<User?>(null)
     val currentUser: LiveData<User?> = _currentUser
@@ -60,12 +64,14 @@ class MainViewModel(
 
     fun fetchTrendingRepos() {
         viewModelScope.launch {
+            _homeError.postValue(null) // 清空首页错误
             repository.fetchTrendingRepos()
         }
     }
 
     fun searchReposByLanguage(language: String) {
         viewModelScope.launch {
+            _searchError.postValue(null) // 清空搜索错误
             repository.searchRepositoriesByLanguage(language)
         }
     }
