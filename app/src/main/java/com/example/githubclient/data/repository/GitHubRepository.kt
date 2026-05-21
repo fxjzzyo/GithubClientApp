@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import com.example.githubclient.data.remote.GitHubApiService
 import com.example.githubclient.data.remote.IssueRequest
 import com.example.githubclient.data.remote.Repository
+import com.example.githubclient.data.remote.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -81,6 +82,30 @@ class GitHubRepository(private val api: GitHubApiService) {
             } catch (e: Exception) {
                 _error.postValue("Failed to create issue: ${e.message}")
                 false
+            }
+        }
+    }
+
+    suspend fun getRepositoryDetail(owner: String, repo: String): Repository? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = api.getRepositoryDetail(owner, repo)
+                if (response.isSuccessful) response.body() else null
+            } catch (e: Exception) {
+                _error.postValue("获取详情失败：${e.message}")
+                null
+            }
+        }
+    }
+
+    suspend fun getAuthenticatedUser(token: String): User? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = api.getAuthenticatedUser("token $token")
+                if (response.isSuccessful) response.body() else null
+            } catch (e: Exception) {
+                _error.postValue("获取用户信息失败：${e.message}")
+                null
             }
         }
     }

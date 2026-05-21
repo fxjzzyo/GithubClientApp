@@ -8,6 +8,10 @@ import com.example.githubclient.data.remote.Repository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.LiveData
+import com.example.githubclient.data.remote.User
+
 
 class MainViewModel(
     private val repository: GitHubRepository,
@@ -24,16 +28,34 @@ class MainViewModel(
     private val _userRepos = MutableStateFlow<List<Repository>>(emptyList())
     val userRepos: StateFlow<List<Repository>> = _userRepos
 
+
+    private val _currentUser = MutableLiveData<User?>(null)
+    val currentUser: LiveData<User?> = _currentUser
+
     init {
         viewModelScope.launch {
             authPreferences.authTokenFlow.collect { token ->
-                _isLoggedIn.value = !token.isNullOrEmpty()
-                if (!token.isNullOrEmpty()) {
+                val logged = !token.isNullOrEmpty()
+                _isLoggedIn.value = logged
+
+                if (logged) {
                     fetchUserRepos(token)
+                    fetchAuthenticatedUser(token) // 👈 这里调用了！
+                } else {
+                    _userRepos.value = emptyList()
+                    _currentUser.postValue(null)
                 }
             }
         }
         fetchTrendingRepos()
+    }
+
+    // 获取当前登录用户信息（补全的方法）
+    private fun fetchAuthenticatedUser(token: String) {
+        viewModelScope.launch {
+            val user = repository.getAuthenticatedUser(token)
+            _currentUser.postValue(user)
+        }
     }
 
     fun fetchTrendingRepos() {
@@ -75,6 +97,17 @@ class MainViewModel(
                     repository.createIssue(it, owner, repo, title, body)
                 }
             }
+        }
+    }
+
+
+    private val _repoDetail = MutableLiveData<Repository?>()
+    val repoDetail: LiveData<Repository?> = _repoDetail
+
+    fun fetchRepoDetail(owner: String, repo: String) {
+        viewModelScope.launch {
+            val result = repository.getRepositoryDetail(owner, repo)
+            _repoDetail.postValue(result)
         }
     }
 }
