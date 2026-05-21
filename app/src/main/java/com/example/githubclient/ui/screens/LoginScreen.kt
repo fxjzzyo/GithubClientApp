@@ -1,6 +1,8 @@
 package com.example.githubclient.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -14,7 +16,16 @@ fun LoginScreen(viewModel: MainViewModel, navController: NavController) {
     var token by remember { mutableStateOf("") }
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
 
-    Scaffold(topBar = { TopAppBar(title = { Text("Login") }) }) { padding ->
+    Scaffold(topBar = {
+        TopAppBar(
+            navigationIcon = {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                }
+            },
+            title = { Text("Login") }
+        )
+    }) { padding ->
         Column(
             modifier = Modifier
                 .padding(padding)

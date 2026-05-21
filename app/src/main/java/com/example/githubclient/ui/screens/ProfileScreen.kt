@@ -8,7 +8,9 @@ import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -45,18 +47,40 @@ fun ProfileScreen(viewModel: MainViewModel, navController: NavController) {
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center
+                .padding(20.dp)
         ) {
             if (!isLoggedIn.value) {
-                Text("暂未登录，请前往登录", style = MaterialTheme.typography.titleMedium)
-                Spacer(modifier = Modifier.height(20.dp))
-                Button(onClick = { navController.navigate("login") }) {
-                    Text("点击登录")
+                // 未登录居中布局
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "暂无登录账号",
+                        style = MaterialTheme.typography.headlineSmall,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
+                    Text(
+                        text = "登录后即可查看个人仓库与账号信息",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(bottom = 32.dp)
+                    )
+                    Button(
+                        onClick = { navController.navigate("login") },
+                        modifier = Modifier.widthIn(min = 160.dp),
+                        shape = MaterialTheme.shapes.medium
+                    ) {
+                        Text("前往登录")
+                    }
                 }
                 return@Column
             }
 
+            // 登录后原有布局
             currentUser?.let {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
