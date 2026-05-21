@@ -54,7 +54,11 @@ data class Repository(
     val description: String?,
     val stargazers_count: Int,
     val language: String?,
-    val owner: Owner
+    val owner: Owner,
+    val private: Boolean?,
+    val default_branch: String?,
+    val open_issues_count: Int?,
+    val size: Long?
 )
 data class Owner(val login: String, val avatar_url: String)
 data class User(val login: String, val avatar_url: String, val name: String?)
