@@ -60,9 +60,11 @@ It implements complete network exception handling, including timeout, network er
 - Navigation test: All repository items can jump to detail page normally
 - Logout test: Clear local data and reset to unlogged state after logout
 - Network test: Disable network to trigger error view and retry button on all pages
-- video presentation: [/video/视频演示.mp4](/video/GithubClient视频演示.mp4)
 
-## Image Presentation
+## Project Presentation
+- Video
+
+[click to watch the video presentation](https://github.com/fxjzzyo/GithubClientApp/raw/main/video/GithubClient视频演示.mp4)
 
 - Vertical Screen
 

@@ -66,6 +66,10 @@
 
 ## 效果演示
 
+- 视频演示
+
+[click to watch the video presentation](https://github.com/fxjzzyo/GithubClientApp/raw/main/video/GithubClient视频演示.mp4)
+
 - 竖屏
 
 <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
