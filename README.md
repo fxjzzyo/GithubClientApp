@@ -35,7 +35,7 @@
 - Kotlin 1.9+
 - Android Gradle Plugin 8.0+
 - MinSdk 29
-2. 克隆项目git clone https://github.com/你的用户名/项目名.git
+2. 克隆项目git clone https://github.com/fxjzzyo/GithubClientApp.git
 3. 打开项目：使用 Android Studio 打开根目录，等待 Gradle 同步完成
 4. 配置网络：项目已内置 GitHub 官方 Api 地址，无需额外配置
 5. 编译项目：点击菜单栏 `Build -> Make Project` 完成构建

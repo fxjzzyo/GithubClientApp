@@ -35,7 +35,7 @@ It implements complete network exception handling, including timeout, network er
 - Kotlin 1.9+
 - AGP 8.0+
 - Min SDK 29
-2. Clone Repositorygit clone https://github.com/YourUsername/YourRepo.git
+2. Clone Repositorygit clone https://github.com/fxjzzyo/GithubClientApp.git
 3. Open the project in Android Studio and wait for Gradle sync
 4. No extra API configuration required
 5. Click Build -> Make Project to complete building
