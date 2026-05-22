@@ -20,9 +20,9 @@
 - 网络异常处理：适配断网、超时、请求失败场景，支持点击重试
 - 多状态页面：加载中、错误提示、空数据、正常展示四种界面状态
 
-🛠 技术栈
+## 🛠 技术栈
 - UI：Jetpack Compose (Material3)
-- 架构：MVVM
+- 架构：MVVM，ViewModel,LiveData
 - 网络：Retrofit2 + OkHttp3
 - 异步：Kotlin Coroutine + Flow
 - 数据存储：DataStore

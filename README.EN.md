@@ -22,7 +22,7 @@ It implements complete network exception handling, including timeout, network er
 
 ## 🛠 Tech Stack
 - UI：Jetpack Compose (Material3)
-- Architecture：MVVM
+- Architecture：MVVM,ViewModel,LiveData
 - Network：Retrofit2 + OkHttp3
 - Asyn：Kotlin Coroutine + Flow
 - Data：DataStore
@@ -40,7 +40,7 @@ It implements complete network exception handling, including timeout, network er
 4. No extra API configuration required
 5. Click Build -> Make Project to complete building
 
-▶️ Run Project
+## ▶️ Run Project
 1. Connect an Android device or launch an emulator
 2. Select app run configuration
 3. Click the Run button (Shift+F10)
@@ -53,7 +53,7 @@ It implements complete network exception handling, including timeout, network er
 - Detail: View repo information and create issues after login
 - Profile: Show login guide for guest users; show user profile & personal repos for logged-in users
 
-🧪 Test Guide
+## 🧪 Test Guide
 - Login state test: Profile page shows login guide for guests and user data for logged-in users
 - UI state test: Correct display for loading, error, empty and success state
 - Navigation test: All repository items can jump to detail page normally
