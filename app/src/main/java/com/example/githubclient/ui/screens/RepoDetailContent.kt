@@ -1,5 +1,6 @@
 package com.example.githubclient.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
@@ -13,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -29,6 +31,22 @@ fun RepoDetailContent(
     var issueTitle by remember { mutableStateOf("") }
     var issueBody by remember { mutableStateOf("") }
     val isLoggedIn by viewModel.isLoggedIn.collectAsState(initial = false)
+    val context = LocalContext.current
+
+    // 监听提交结果
+    LaunchedEffect(Unit) {
+        viewModel.issueCreateResult.collect { isSuccess ->
+            if (isSuccess) {
+                // 成功：清空输入框 + Toast
+                issueTitle = ""
+                issueBody = ""
+                Toast.makeText(context, "Issue 提交成功", Toast.LENGTH_SHORT).show()
+            } else {
+                // 失败：Toast
+                Toast.makeText(context, "Issue 提交失败", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     Column(
         modifier = Modifier

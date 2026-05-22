@@ -1,5 +1,6 @@
 package com.example.githubclient.ui.viewmodel
 
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.githubclient.data.repository.GitHubRepository
@@ -11,6 +12,8 @@ import kotlinx.coroutines.launch
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.LiveData
 import com.example.githubclient.data.remote.User
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.firstOrNull
 
 
@@ -38,6 +41,9 @@ class MainViewModel(
 
     private val _currentUser = MutableLiveData<User?>(null)
     val currentUser: LiveData<User?> = _currentUser
+
+    private val _issueCreateResult = MutableSharedFlow<Boolean>()
+    val issueCreateResult = _issueCreateResult.asSharedFlow()
 
     init {
         viewModelScope.launch {
@@ -126,7 +132,8 @@ class MainViewModel(
         viewModelScope.launch {
             authPreferences.authTokenFlow.collect { token ->
                 token?.let {
-                    repository.createIssue(it, owner, repo, title, body)
+                    val success = repository.createIssue(it, owner, repo, title, body)
+                    _issueCreateResult.emit(success)
                 }
             }
         }
