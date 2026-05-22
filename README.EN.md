@@ -64,7 +64,7 @@ It implements complete network exception handling, including timeout, network er
 ## Project Presentation
 - Video
 
-[click to watch the video](https://fxjzzyo.github.io/GithubClientApp/raw/main/video/video.html)
+[click to watch the video](https://github.com/fxjzzyo/GithubClientApp/raw/main/video/video.html)
 
 [video presentation](https://github.com/fxjzzyo/GithubClientApp/raw/main/video/GithubClient视频演示.mp4)
 
