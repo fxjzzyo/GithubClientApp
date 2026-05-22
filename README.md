@@ -68,7 +68,7 @@
 
 - 视频演示
 
-[点击观看演示视频](https://github.com/fxjzzyo/GithubClientApp/video/video.html)
+[//]: # ([点击观看演示视频]&#40;https://github.com/fxjzzyo/GithubClientApp/video/video.html&#41;)
 
 [项目演示视频](https://github.com/fxjzzyo/GithubClientApp/raw/main/video/GithubClient视频演示.mp4)
 
