@@ -206,18 +206,32 @@ fun RepoItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable {
-                onClick()
-            }
+            .clickable { onClick() }
             .padding(vertical = 6.dp),
         colors = if (isSelected) CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
         ) else CardDefaults.cardColors()
     ) {
-        Row(Modifier.padding(16.dp)) {
-            Column {
-                Text(repo.name, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
-                Text(repo.description ?: "无描述", style = MaterialTheme.typography.bodySmall)
+        Column(Modifier.padding(16.dp)) {
+            // 仓库名称
+            Text(
+                text = repo.name,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+            )
+            // 描述
+            Text(
+                text = repo.description ?: "无描述",
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(vertical = 4.dp)
+            )
+            // 底部信息：Star + 语言 + 作者
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("⭐ ${repo.stargazers_count}")
+                Text(repo.language ?: "Unknown")
+                Text("@${repo.owner.login}")
             }
         }
     }

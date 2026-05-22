@@ -61,25 +61,28 @@ fun ProfileScreen(
             TopAppBar(
                 title = { Text("MyProfile") },
                 navigationIcon = {},
+                // 🔥 只有已登录才显示右上角菜单
                 actions = {
-                    Box {
-                        IconButton(onClick = { menuExpanded = true }) {
-                            Icon(Icons.Default.MoreVert, "菜单")
-                        }
-                        DropdownMenu(
-                            expanded = menuExpanded,
-                            onDismissRequest = { menuExpanded = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("退出登录", color = MaterialTheme.colorScheme.error) },
-                                onClick = {
-                                    menuExpanded = false
-                                    viewModel.logout()
-                                    navController.navigate("home") {
-                                        popUpTo(0)
+                    if (isLoggedIn == true) {
+                        Box {
+                            IconButton(onClick = { menuExpanded = true }) {
+                                Icon(Icons.Default.MoreVert, "菜单")
+                            }
+                            DropdownMenu(
+                                expanded = menuExpanded,
+                                onDismissRequest = { menuExpanded = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("退出登录", color = MaterialTheme.colorScheme.error) },
+                                    onClick = {
+                                        menuExpanded = false
+                                        viewModel.logout()
+                                        navController.navigate("home") {
+                                            popUpTo(0)
+                                        }
                                     }
-                                }
-                            )
+                                )
+                            }
                         }
                     }
                 }
@@ -88,7 +91,7 @@ fun ProfileScreen(
     ) { padding ->
 
         if (isLandscape) {
-            // 横屏：左右双栏（不变）
+            // 横屏：左右双栏
             Row(
                 modifier = Modifier
                     .padding(padding)
@@ -106,38 +109,42 @@ fun ProfileScreen(
                         userRepos = userRepos,
                         isLoggedIn = isLoggedIn,
                         error = error,
-                        onRetry = { viewModel.loadUserProfile() }
+                        onRetry = { viewModel.loadUserProfile() },
+                        navController = navController
                     )
                 }
 
-                ProfileRepoList(
-                    modifier = Modifier.weight(0.6f),
-                    userRepos = userRepos,
-                    navController = navController
-                )
+                if (isLoggedIn == true) {
+                    ProfileRepoList(
+                        modifier = Modifier.weight(0.6f),
+                        userRepos = userRepos,
+                        navController = navController
+                    )
+                }
             }
         } else {
-            // 竖屏：修复！不用外层 verticalScroll，用 LazyColumn 全包
+            // 竖屏
             LazyColumn(
                 modifier = Modifier
                     .padding(padding)
                     .fillMaxSize()
                     .padding(20.dp)
             ) {
-                // 1. 个人信息部分
+                // 个人信息
                 item {
                     ProfileContent(
                         user = user,
                         userRepos = userRepos,
                         isLoggedIn = isLoggedIn,
                         error = error,
-                        onRetry = { viewModel.loadUserProfile() }
+                        onRetry = { viewModel.loadUserProfile() },
+                        navController = navController
                     )
                 }
 
-                // 2. 仓库列表标题
-                item {
-                    if (isLoggedIn == true && user != null && error == null) {
+                // 仓库列表
+                if (isLoggedIn == true && user != null && error == null) {
+                    item {
                         Spacer(Modifier.height(32.dp))
                         Text(
                             "仓库列表",
@@ -146,10 +153,7 @@ fun ProfileScreen(
                         )
                         Spacer(Modifier.height(16.dp))
                     }
-                }
 
-                // 3. 仓库列表内容
-                if (isLoggedIn == true && user != null && error == null) {
                     if (userRepos.isEmpty()) {
                         item { Text("暂无仓库") }
                     } else {
@@ -165,7 +169,17 @@ fun ProfileScreen(
                             ) {
                                 Column(Modifier.padding(16.dp)) {
                                     Text(repo.name, fontWeight = FontWeight.Medium)
+                                    Spacer(Modifier.height(4.dp))
                                     Text(repo.description ?: "无描述", style = MaterialTheme.typography.bodyMedium)
+                                    Spacer(Modifier.height(6.dp))
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Text("⭐ ${repo.stargazers_count}")
+                                        Text(repo.language ?: "Unknown")
+                                        Text("@${repo.owner.login}")
+                                    }
                                 }
                             }
                         }
@@ -176,14 +190,15 @@ fun ProfileScreen(
     }
 }
 
-// 个人信息（只负责上半部分，不包含仓库列表）
+// 个人信息（增加 navController，用于未登录跳转）
 @Composable
 fun ProfileContent(
     user: User?,
     userRepos: List<Repository>,
     isLoggedIn: Boolean?,
     error: String?,
-    onRetry: () -> Unit
+    onRetry: () -> Unit,
+    navController: NavController
 ) {
     when {
         isLoggedIn == null -> {
@@ -195,7 +210,7 @@ fun ProfileContent(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 32.dp),
+                    .padding(vertical = 40.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -210,6 +225,11 @@ fun ProfileContent(
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                Spacer(Modifier.height(24.dp))
+                // 🔥 未登录显示登录按钮
+                Button(onClick = { navController.navigate("login") }) {
+                    Text("去登录")
+                }
             }
         }
         user == null && error == null -> {
@@ -228,7 +248,6 @@ fun ProfileContent(
             }
         }
         else -> {
-            // 头像 + 信息
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -258,7 +277,6 @@ fun ProfileContent(
     }
 }
 
-// 横屏右侧仓库列表（不变）
 @Composable
 fun ProfileRepoList(
     modifier: Modifier,
@@ -297,7 +315,17 @@ fun ProfileRepoList(
                 ) {
                     Column(Modifier.padding(16.dp)) {
                         Text(repo.name, fontWeight = FontWeight.Medium)
+                        Spacer(Modifier.height(4.dp))
                         Text(repo.description ?: "无描述", style = MaterialTheme.typography.bodyMedium)
+                        Spacer(Modifier.height(6.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("⭐ ${repo.stargazers_count}")
+                            Text(repo.language ?: "Unknown")
+                            Text("@${repo.owner.login}")
+                        }
                     }
                 }
             }
