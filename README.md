@@ -68,7 +68,8 @@
 
 - 视频演示
 
-[点击观看项目演示视频](https://github.com/fxjzzyo/GithubClientApp/blob/main/video/GithubClient视频演示.mp4)
+<video controls src="https://github.com/fxjzzyo/GithubClientApp/raw/main/video/GithubClient视频演示.mp44" width="600"></video>
+[项目演示视频](https://github.com/fxjzzyo/GithubClientApp/raw/main/video/GithubClient视频演示.mp4)
 
 - 竖屏
 
