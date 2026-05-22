@@ -68,13 +68,22 @@
 
 - 竖屏
 
-![home](video/home.png "home") ![search](video/search.png "search") ![profile](video/profile.png "profile")
+<div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+  <img src="video/home.png" width="32%" alt="home">
+  <img src="video/search.png" width="32%" alt="search">
+  <img src="video/profile.png" width="32%" alt="profile">
+</div>
 
-![detial](video/detail.png "detail")
+<div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+  <img src="video/detail.png" width="32%" alt="detail">
+</div>
 
 - 横屏
 
-![home_landscape](video/home_landscape.png "home_landscape") ![profile_landscape](video/profile_landscape.png "profile_landscape")
+<div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+  <img src="video/home_landscape.png" width="32%" alt="home_landscape">
+  <img src="video/profile_landscape.png" width="32%" alt="profile_landscape">
+</div>
 
 
 
