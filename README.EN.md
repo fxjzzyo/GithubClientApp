@@ -34,7 +34,7 @@ It implements complete network exception handling, including timeout, network er
 - Android Studio Hedgehog or newer
 - Kotlin 1.9+
 - AGP 8.0+
-- Min SDK 24
+- Min SDK 29
 2. Clone Repositorygit clone https://github.com/YourUsername/YourRepo.git
 3. Open the project in Android Studio and wait for Gradle sync
 4. No extra API configuration required
