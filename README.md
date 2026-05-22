@@ -63,3 +63,19 @@
 - 退出登录测试：退出后清空本地数据，返回首页，个人中心重置为未登录状态
 - 网络异常测试：关闭网络，所有页面自动展示错误提示 + 重试按钮
 - 视频演示: [/video/视频演示.mp4](/video/GithubClient视频演示.mp4)
+
+## 效果演示
+
+- 竖屏
+
+![home](video/home.png "home") ![search](video/search.png "search") ![profile](video/profile.png "profile")
+
+![detial](video/detail.png "detail")
+
+- 横屏
+
+![home_landscape](video/home_landscape.png "home_landscape") ![profile_landscape](video/profile_landscape.png "profile_landscape")
+
+
+
+ 

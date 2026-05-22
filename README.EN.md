@@ -62,3 +62,15 @@ It implements complete network exception handling, including timeout, network er
 - Network test: Disable network to trigger error view and retry button on all pages
 - video presentation: [/video/视频演示.mp4](/video/GithubClient视频演示.mp4)
 
+## Image Presentation
+
+- Vertical Screen
+
+![home](video/home.png "home") ![search](video/search.png "search") ![profile](video/profile.png "profile")
+
+![detial](video/detail.png "detail")
+
+- Landscape Screen
+
+![home_landscape](video/home_landscape.png "home_landscape") ![profile_landscape](video/profile_landscape.png "profile_landscape")
+
