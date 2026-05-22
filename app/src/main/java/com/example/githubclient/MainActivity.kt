@@ -15,7 +15,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 依赖注入（简化版）
         val api = RetrofitClient.api
         val repository = GitHubRepository(api)
         val authPreferences = AuthPreferences(this)

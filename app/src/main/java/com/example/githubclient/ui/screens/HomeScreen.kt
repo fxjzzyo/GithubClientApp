@@ -14,63 +14,158 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.example.githubclient.data.remote.Repository
 import com.example.githubclient.ui.viewmodel.MainViewModel
+import androidx.compose.material3.*
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.navigation.NavHostController
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
+fun HomeScreen(
+    viewModel: MainViewModel,
+    navController: NavHostController,
+    modifier: Modifier = Modifier
+) {
     val repos by viewModel.trendingRepos.observeAsState(emptyList())
     val error by viewModel.homeError.observeAsState()
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(Unit) {
+        viewModel.fetchTrendingRepos()
+    }
+
+    // 屏幕方向判断
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+
+    // 横屏模式：选中的 repo
+    var selectedRepo by remember { mutableStateOf<Repository?>(null) }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Trending Repositories") }) }
+        topBar = {
+            TopAppBar(
+                title = { Text("Trending Repositories") }
+            )
+        }
     ) { padding ->
-        Box(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-        ) {
-            when {
-                // 加载中
-                repos.isEmpty() && error == null -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
 
-                // 失败 + 重试按钮
-                error != null -> {
-                    Column(
-                        modifier = Modifier.align(Alignment.Center),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = error!!,
-                            color = MaterialTheme.colorScheme.error,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(horizontal = 20.dp)
-                        )
-                        Spacer(Modifier.height(16.dp))
-                        Button(onClick = {
-                            viewModel.fetchTrendingRepos()
-                        }) {
-                            Text("重试")
+        if (isLandscape) {
+            // ==========================================
+            // 🔥 横屏：双面板  列表 + 详情
+            // ==========================================
+            Row(
+                modifier = modifier
+                    .padding(padding)
+                    .fillMaxSize()
+            ) {
+                // 左侧列表 (占 40% 宽度)
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .weight(0.4f)
+                        .padding(16.dp)
+                ) {
+                    when {
+                        error != null -> {
+                            item {
+                                ErrorRetryView(
+                                    message = error!!,
+                                    onRetry = { viewModel.fetchTrendingRepos() }
+                                )
+                            }
+                        }
+                        repos.isEmpty() -> {
+                            item {
+                                Box(
+                                    modifier = Modifier.fillParentMaxSize(),
+                                    contentAlignment = androidx.compose.ui.Alignment.Center
+                                ) {
+                                    CircularProgressIndicator()
+                                }
+                            }
+                        }
+                        else -> {
+                            items(repos) { repo ->
+                                RepoItem(
+                                    repo = repo,
+                                    isSelected = repo == selectedRepo,
+                                    onClick = {
+                                        selectedRepo = repo
+                                    }
+                                )
+                            }
                         }
                     }
                 }
 
-                // 成功列表
-                else -> {
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                // 右侧详情 (占 60% 宽度)
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .weight(0.6f)
+                        .padding(16.dp)
+                ) {
+                    if (selectedRepo == null) {
+                        Text(
+                            text = "请选择一个仓库查看详情",
+                            modifier = Modifier.align(androidx.compose.ui.Alignment.Center)
+                        )
+                    } else {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            RepoDetailContent(
+                                repo = selectedRepo!!,
+                                viewModel = viewModel,
+                                navController = navController
+                            )
+                        }
+                    }
+                }
+            }
+
+        } else {
+            // ==========================================
+            // 竖屏：正常单列表
+            // ==========================================
+            LazyColumn(
+                state = listState,
+                modifier = modifier
+                    .padding(padding)
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                when {
+                    error != null -> {
+                        item {
+                            ErrorRetryView(
+                                message = error!!,
+                                onRetry = { viewModel.fetchTrendingRepos() }
+                            )
+                        }
+                    }
+                    repos.isEmpty() -> {
+                        item {
+                            Box(
+                                modifier = Modifier.fillParentMaxSize(),
+                                contentAlignment = androidx.compose.ui.Alignment.Center
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        }
+                    }
+                    else -> {
                         items(repos) { repo ->
-                            RepoItem(repo) {
+                            RepoItem(repo = repo) {
                                 navController.navigate("repoDetail/${repo.owner.login}/${repo.name}")
                             }
                         }
@@ -81,18 +176,49 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
     }
 }
 
+// 错误重试 UI
 @Composable
-fun RepoItem(repo: Repository, onClick: () -> Unit) {
-    androidx.compose.material3.Card(
+fun ErrorRetryView(
+    message: String,
+    onRetry: () -> Unit
+) {
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
-            .clickable(onClick = onClick)
+            .padding(24.dp),
+        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = repo.full_name, style = MaterialTheme.typography.titleMedium)
-            Text(text = repo.description ?: "No description")
-            Text("⭐ ${repo.stargazers_count} • ${repo.language ?: "Unknown"}")
+        Text(message, color = MaterialTheme.colorScheme.error)
+        Spacer(Modifier.height(12.dp))
+        Button(onClick = onRetry) {
+            Text("重试")
+        }
+    }
+}
+
+@Composable
+fun RepoItem(
+    repo: Repository,
+    isSelected: Boolean = false,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                onClick()
+            }
+            .padding(vertical = 6.dp),
+        colors = if (isSelected) CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ) else CardDefaults.cardColors()
+    ) {
+        Row(Modifier.padding(16.dp)) {
+            Column {
+                Text(repo.name, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                Text(repo.description ?: "无描述", style = MaterialTheme.typography.bodySmall)
+            }
         }
     }
 }
